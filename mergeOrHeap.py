@@ -19,7 +19,7 @@ def doWithMerge(array_to_sort):
     start_time = timeit.default_timer()
     mergeSort(array_to_sort)
     elapsed = timeit.default_timer() - start_time
-    print("Merge time - ", elapsed)
+    print("Merge time - ", format(elapsed, '.6f'))
 
     # Save result to file
     df = pd.DataFrame(array_to_sort)
@@ -33,11 +33,22 @@ def doWithHeap(array_to_sort):
     start_time = timeit.default_timer()
     heapSort(array_to_sort)
     elapsed = timeit.default_timer() - start_time
-    print("Heap time - ", elapsed)
+    print("Heap time - ", format(elapsed, '.6f'))
 
     # Save result to file
     df = pd.DataFrame(array_to_sort)
     df.to_csv("./outputs/result_heap.csv")
+
+def getPredicted(index):
+    """
+        Save to array the predicted data
+        Args: array
+    """
+    preditec_file = "../Dados/train-target.csv"
+    data = pd.read_csv(preditec_file, sep=",",engine = 'python', names=['ID', 'Predicted'])
+    array_predited = data['Predicted'].iloc[index]
+    print(array_predited)
+
 
 
 def main():
@@ -56,7 +67,9 @@ def main():
                         help="Run script to split a file")                     
     args = parser.parse_args()
 
-    array_file = 'GeneratedData/output_51.csv'
+    
+
+    array_file = 'GeneratedData/output_34.csv'
 
     data = pd.read_csv(array_file, sep=",",engine = 'python', names=['ID', 'length','array'])
 
@@ -77,6 +90,10 @@ def main():
     print("Menor: ", menor)
 
     print("Tamanho: ", row['length'])
+
+    index = data['ID'].iloc[0]
+    getPredicted(index)
+    print("Index: ",index)
 
     if args.version:
         print("Amazing Script Version: " + __VERSION)
