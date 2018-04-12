@@ -2,36 +2,23 @@ import csv
 import random
 import math
 import operator
-<<<<<<< HEAD
-
-=======
 import pandas as pd
- 
->>>>>>> feature-knn
+
+
 def loadDataset(filename, split, trainingSet=[] , testSet=[]):
     with open(filename, "rt", encoding='utf8') as csvfile:
         lines = csv.reader(csvfile)
         dataset = list(lines)
-<<<<<<< HEAD
-        for x in range(len(dataset)-1):
-            for y in range(2):
-=======
         nr = str(dataset[1])
         for x in range(1,len(dataset)):
             for y in range(nr.count(',')+1):
->>>>>>> feature-knn
                 dataset[x][y] = float(dataset[x][y])
             if random.random() < split:
                 trainingSet.append(dataset[x])
             else:
                 testSet.append(dataset[x])
-<<<<<<< HEAD
+        
 
-
-=======
-            
- 
->>>>>>> feature-knn
 def euclideanDistance(instance1, instance2, length):
     """
     Euclidean distance is defined as 
@@ -41,6 +28,7 @@ def euclideanDistance(instance1, instance2, length):
     for x in range(length):
         distance += pow((instance1[x] - instance2[x]), 2)
     return math.sqrt(distance)
+
 
 def getNeighbors(trainingSet, testInstance, k):
     """
@@ -58,7 +46,7 @@ def getNeighbors(trainingSet, testInstance, k):
         neighbors.append(distances[x][0])
     return neighbors
 
-def getResponse(neighbors):
+    def getResponse(neighbors):
     classVotes = {}
     for x in range(len(neighbors)):
         response = neighbors[x][-1]
@@ -68,6 +56,7 @@ def getResponse(neighbors):
             classVotes[response] = 1
     sortedVotes = sorted(classVotes.items(), key=operator.itemgetter(1), reverse=True)
     return sortedVotes[0][0]
+
 
 def getAccuracy(testSet, predictions):
     """
@@ -85,11 +74,7 @@ def main():
     trainingSet=[]
     testSet=[]
     split = 0.67
-<<<<<<< HEAD
-    data_file = '../Dados/feature-file.csv'
-=======
     data_file = './train-feature.csv'
->>>>>>> feature-knn
     loadDataset(data_file, split, trainingSet, testSet)
     print ('Train set: ', repr(len(trainingSet)))
     print ('Test set: ', repr(len(testSet)))
@@ -107,8 +92,8 @@ def main():
 
 if __name__ == '__main__':
 
-    try:
-        main()
+try:
+    main()
 
-    except KeyboardInterrupt:
-        print("Interrupt received! Exiting cleanly...")
+except KeyboardInterrupt:
+    print("Interrupt received! Exiting cleanly...")
