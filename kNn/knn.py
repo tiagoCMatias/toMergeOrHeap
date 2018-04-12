@@ -46,7 +46,7 @@ def getNeighbors(trainingSet, testInstance, k):
         neighbors.append(distances[x][0])
     return neighbors
 
-    def getResponse(neighbors):
+def getResponse(neighbors):
     classVotes = {}
     for x in range(len(neighbors)):
         response = neighbors[x][-1]
@@ -92,8 +92,8 @@ def main():
 
 if __name__ == '__main__':
 
-try:
-    main()
+    try:
+        main()
 
-except KeyboardInterrupt:
-    print("Interrupt received! Exiting cleanly...")
+    except KeyboardInterrupt:
+        print("Interrupt received! Exiting cleanly...")
