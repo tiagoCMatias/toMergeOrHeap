@@ -2,19 +2,21 @@ import csv
 import random
 import math
 import operator
+import pandas as pd
  
 def loadDataset(filename, split, trainingSet=[] , testSet=[]):
-	with open(filename, "rt", encoding='utf8') as csvfile:
-	    lines = csv.reader(csvfile)
-	    dataset = list(lines)
-	    for x in range(len(dataset)-1):
-	        for y in range(2):
-	            dataset[x][y] = float(dataset[x][y])
-	        if random.random() < split:
-	            trainingSet.append(dataset[x])
-	        else:
-	            testSet.append(dataset[x])
- 
+    with open(filename, "rt", encoding='utf8') as csvfile:
+        lines = csv.reader(csvfile)
+        dataset = list(lines)
+        nr = str(dataset[1])
+        for x in range(1,len(dataset)):
+            for y in range(nr.count(',')+1):
+                dataset[x][y] = float(dataset[x][y])
+            if random.random() < split:
+                trainingSet.append(dataset[x])
+            else:
+                testSet.append(dataset[x])
+            
  
 def euclideanDistance(instance1, instance2, length):
 	distance = 0
@@ -57,7 +59,7 @@ def main():
     trainingSet=[]
     testSet=[]
     split = 0.67
-    data_file = '../../Dados/knn-train.csv'
+    data_file = './train-feature.csv'
     loadDataset(data_file, split, trainingSet, testSet)
     print ('Train set: ', repr(len(trainingSet)))
     print ('Test set: ', repr(len(testSet)))
