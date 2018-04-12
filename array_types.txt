@@ -1,0 +1,8 @@
+Type of arrays:
+1.Random
+2.Few unique
+3.Reversed
+4.Almost sorted
+
+
+https://www.youtube.com/watch?v=ZZuD6iUe3Pc
