@@ -2,8 +2,6 @@ import os
 import sys
 import csv
 
-csv.field_size_limit(sys.maxsize)
-
 def split(filehandler, delimiter=',', row_limit=100,
           output_name_template='output_%s.csv', output_path='.', keep_headers=False):
     import csv
