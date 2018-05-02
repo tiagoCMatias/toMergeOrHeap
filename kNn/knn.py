@@ -74,7 +74,7 @@ def main():
     trainingSet=[]
     testSet=[]
     split = 0.67
-    data_file = './train-feature.csv'
+    data_file = '../Data/train-feature3.csv'
     loadDataset(data_file, split, trainingSet, testSet)
     print ('Train set: ', repr(len(trainingSet)))
     print ('Test set: ', repr(len(testSet)))
