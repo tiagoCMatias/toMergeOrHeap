@@ -48,7 +48,7 @@ def create_classifier(dataSet, features):
 
 
 def main():
-    #data_file = '../Dados/sample-feature.csv'
+
     file_path = "../Dados/train-feature5.csv"
 
     name_of_features = first_dataset(file_path)
