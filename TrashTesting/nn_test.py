@@ -93,5 +93,5 @@ for X, y in datasets:
                 size=15, horizontalalignment='right')
         i += 1
 
-figure.subplots_adjust(left=.02, right=.98)
-plt.show()
+        figure.subplots_adjust(left=.02, right=.98)
+        plt.show()

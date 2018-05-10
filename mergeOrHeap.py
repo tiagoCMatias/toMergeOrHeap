@@ -185,41 +185,38 @@ def getPredictedData(file):
 
 
 def getFeatureFromArray(data_array, listOfFeatures, target):
-    parts = 5
-    divided_array = split_list(data_array, wanted_parts=parts)
-    n_inversions = 0
-    inv = []
-    for array in divided_array:
-        i = 1
-        for i in range(len(array)):
-            value_before = array[i - 1]
-            if value_before > array[i]:
-                n_inversions += 1
-        inv.append(n_inversions)
+        parts = 5
+        divided_array = split_list(data_array, wanted_parts=parts)
         n_inversions = 0
-    mean_value = mean(data_array)
-    maxtab, mintab = peakdet(data_array,.3)
-    max_mean = (mean(maxtab.flatten()))
-    min_mean = (mean(mintab.flatten()))
-    listOfFeatures.append({
-        'len': len(data_array),
-        'inv1': inv[0],
-        'inv2': inv[1],
-        'inv3': inv[2],
-        'inv4': inv[3],
-        'inv5': inv[4],
-        'total_inv': sum(inv),
-        'stdev': format(stdev(data_array), '.2f'),
-        'pstdev': format(pstdev(data_array), '.2f'),
-        'median': format(median(data_array), '.0f'),
-        'mean': format(mean_value, '.2f'),
-        'pvariance': format(pvariance(data_array, mean_value), '.0f'),
-        'max_mean': max_mean,
-        'min_mean': min_mean,
-        'max_length': len(maxtab),
-        'min_length': len(mintab),
-        'target': target
-    })
+        inv = []
+        for array in divided_array:
+            i = 1
+            for i in range(len(array)):
+                value_before = array[i - 1]
+                if value_before > array[i]:
+                    n_inversions += 1
+            inv.append(n_inversions)
+            n_inversions = 0
+        mean_value = mean(data_array)
+        maxtab, mintab = peakdet(data_array,.3)
+        max_mean = (mean(maxtab.flatten()))
+        min_mean = (mean(mintab.flatten()))
+        listOfFeatures.append({
+            'len': len(data_array),
+            'inv1': inv[0],
+            'inv2': inv[1],
+            'inv3': inv[2],
+            'inv4': inv[3],
+            'inv5': inv[4],
+            'total_inv': sum(inv),
+            'median': format(median(data_array), '.0f'),
+            'mean': format(mean_value, '.2f'),
+            'max_mean': max_mean,
+            'min_mean': min_mean,
+            'max_length': len(maxtab),
+            'min_length': len(mintab),
+            'target': target
+        })
 
 
 def extractSampleFeature(chunksize=10):
@@ -240,18 +237,15 @@ def extractSampleFeature(chunksize=10):
                 predicted = int(data_pred['target'][data_pred['id'] == row['id']].values)
                 getFeatureFromArray(data_array, featureList, predicted)
                 count_total += 1
-                if(predicted == 1):
-                    heap_array = data_array
-                if(predicted == 2):
-                    merge_array = data_array
-                if merge_array and heap_array:
-                   drawMultiArrayGraph(merge_array, heap_array)
+            #    if merge_array and heap_array:
+            #       drawMultiArrayGraph(merge_array, heap_array)
             if row['len'] > 100:
                 cols_feature = ['len', 'inv1', 'inv2', 'inv3', 'inv4', 'inv5', 'total_inv',
-                                'stdev', 'pstdev', 'median' , 'mean',  'pvariance',
+                                'median' , 'mean',
                                 'max_mean', 'min_mean',
                                 'max_length', 'min_length',
                                 'target']
+
                 features = pd.DataFrame(featureList, columns=cols_feature)
                 file_name = "Dados/train-feature5.csv"
                 features.to_csv(file_name, sep=',', encoding='utf-8', index_label='id')
@@ -263,53 +257,115 @@ def extractSampleFeature(chunksize=10):
 
 
 
-def extractFeature(chunksize=10, stop=500):
+def extractFeature(chunksize=10):
     big_file = "Dados/train-arrays.csv"
-    predictedFile = "Dados/knn-train.csv"
-    data_pred = pd.read_csv(predictedFile, sep=",", names=['id', 'target'])
-    count = 0
+    data_pred = getPredictedData("Dados/knn-train.csv")
+    count_total = 0
     featureList = []
     cols = ['id', 'len', 'array']
-    cols_feature = ['array_id', 'len', 'n_inversions', 'repeats', 'mean', 'median', 'target']
     start_time = timeit.default_timer()
-    for data_train in pd.read_csv(big_file, encoding ="latin_1", sep=",", names=cols , engine='python', iterator=True, chunksize=chunksize):
-        count += 1
+    for data_train in pd.read_csv(big_file, encoding="latin_1", sep=",", names=cols, engine='python', iterator=True, chunksize=chunksize):
+        count_total += 1
         for index, row in data_train.iterrows():
-            data_array = row['array'].replace("]", "").replace("[", "")
-            data_array = [int(s) for s in data_array.split('  ')]
-            length = row['len']
-            n_inversions = 0
-            value_before = data_array[0]
-            for value in data_array:
-                if value_before > value:
-                    n_inversions +=1
-                value_before = value
-            mean_repeat = 0
-            featureList.append(
-                {
-                    'array_id': row['id'],
-                    'len': length,
-                    'n_inversions': n_inversions,
-                    'mean': int(np.mean(data_array)),
-                    'median': int(np.median(data_array)),
-                    #'deviation': stdev(data_array),
-                    #'extractTime': format(elapsed, '.6f'),
-                    'target': int(data_pred['target'][data_pred['id'] == row['id']].values)
-                 }
-            )
-        if count%10 == 0:
-            print("Itera: ", count, "array_size:", row[1])
+                data_array = row['array'].replace("]", "").replace("[", "")
+                data_array = [int(s) for s in data_array.split('  ')]
+                predicted = int(data_pred['target'][data_pred['id'] == row['id']].values)
+                setFeatures(data_array, featureList, id=row['id'],  target=predicted)
+        if count_total % 10 == 0:
+            print("Itera: ", count_total, "array_size:", row[1], "id:", row['id'])
             sys.stdout.flush()
-        if stop != 0:
-            if count%stop == 0:
-                #print(repeats)
-                break
+
+    cols_feature = ['id_target', 'len', 'inv1', 'inv2', 'inv3', 'inv4', 'inv5', 'total_inv',
+                    'median', 'mean',
+                    'max_mean', 'min_mean',
+                    'max_length', 'min_length',
+                    'target']
+    elapsed = timeit.default_timer() - start_time
+    print("time - ", format(elapsed, '.2f'))
+    features = pd.DataFrame(featureList, columns=cols_feature)
+    file_name = "Dados/master-features3.csv"
+    features.to_csv(file_name, sep=',', encoding='utf-8', index_label='id')
+
+
+
+def setFeatures(data_array, featureList, id):
+    parts = 5
+    divided_array = split_list(data_array, wanted_parts=parts)
+    n_inversions = 0
+    inv = []
+    for array in divided_array:
+        i = 1
+        for i in range(len(array)):
+            value_before = array[i - 1]
+            if value_before > array[i]:
+                n_inversions += 1
+        inv.append(n_inversions)
+        n_inversions = 0
+    mean_value = mean(data_array)
+    maxtab, mintab = peakdet(data_array, .3)
+    max_mean = (mean(maxtab.flatten()))
+    min_mean = (mean(mintab.flatten()))
+    featureList.append({
+        'id_target': id,
+        'len': len(data_array),
+        'inv1': inv[0],
+        'inv2': inv[1],
+        'inv3': inv[2],
+        'inv4': inv[3],
+        'inv5': inv[4],
+        'total_inv': sum(inv),
+        'median': format(median(data_array), '.0f'),
+        'mean': format(mean_value, '.2f'),
+        'max_mean': max_mean,
+        'min_mean': min_mean,
+        'max_length': len(maxtab),
+        'min_length': len(mintab)
+    })
+
+    #id,array_id,len,n_inversions,repeats,mean,median,target
+
+
+
+def getPercentage():
+    dataSet_File = "Dados/train-arrays.csv"
+    target_file = "Dados/train-target.csv"
+    cols=['id', 'predicted']
+
+    for x in  pd.read_csv(dataSet_File, index_col=False, names=['x'], iterator=True, chunksize=10, header=None).iloc[:, 1]:
+        print(x.head())
+
+
+
+def prepareData():
+    target_file = "../Dados/target.csv"
+    count_total = 0
+    featureList = []
+    cols = ['id', 'len', 'array']
+    start_time = timeit.default_timer()
+    for data_train in pd.read_csv(target_file, encoding="latin_1", sep=",", names=cols, engine='python', iterator=True, chunksize=10):
+        count_total += 1
+        for index, row in data_train.iterrows():
+                data_array = row['array'].replace("]", "").replace("[", "")
+                data_array = [int(s) for s in data_array.split('  ')]
+                setFeatures(data_array, featureList, id=row['id'])
+                count_total += 1
+        if count_total % 10 == 0:
+            print("Itera: ", count_total, "array_size:", row[1], "id:", row['id'])
+            sys.stdout.flush()
+
+#    cols_feature = [ 'id', 'len', 'n_inversions', 'median', 'mean', 'repeats']
+    cols_feature = ['id_target', 'len', 'inv1', 'inv2', 'inv3', 'inv4', 'inv5', 'total_inv',
+                    'median', 'mean',
+                    'max_mean', 'min_mean',
+                    'max_length', 'min_length',
+                    ]
 
     features = pd.DataFrame(featureList, columns=cols_feature)
-    file_name = "Dados/train-feature4.csv"
+    file_name = "Dados/main-features2.csv"
     features.to_csv(file_name, sep=',', encoding='utf-8', index_label='id')
-    elapsed = timeit.default_timer() - start_time
-    print("Tempo: ",(elapsed/60), "min")
+
+
+
 
 def main():
 
@@ -328,7 +384,12 @@ def main():
                         help="Run script to split a file")
     parser.add_argument("-f", "--feature",
                         help="Create a new file with features")
+    parser.add_argument("-e", "--extractfeatures",
+                        action="store_true",
+                        help="Extract Features from file")
+
     args = parser.parse_args()
+
 
     if args.version:
         print("Amazing Script Version: " + __VERSION)
@@ -341,13 +402,16 @@ def main():
             extractSampleFeature()
         else:
             print("extractFeature")
-            extractFeature(stop=int(stop_condition))
+            extractFeature()
     if args.merge:
         # doWithMerge(test_array)
         print("Do merge")
     if args.heap:
         # doWithHeap(test_array)
         print("Do heap")
+    if args.extractfeatures:
+        print("preparing Data")
+        prepareData()
     if args.splitFile:       
         split(open("../Dados/train-arrays.csv", "r"))
         exit()
@@ -362,3 +426,11 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print("Interrupt received! Exiting cleanly...")
+
+
+#          H  |  M
+# 10       1     1412
+# 100      565   834
+# 1000     1332  89
+# 100000   76    1335
+# 1000000  4     1382

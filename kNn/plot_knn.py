@@ -8,6 +8,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.metrics import accuracy_score
+from sklearn.pipeline import make_pipeline
+import joblib
+
 
 def loadDataSet(file_path, cols):
     return pd.read_csv(file_path, encoding="latin_1", sep=",", skiprows=1, names=cols, engine='python', memory_map=True)
@@ -34,7 +37,7 @@ def knnClassifer(dataset, features):
     k_best = 0
     for K in range(50):
         K_value = K + 1
-        neigh = KNeighborsClassifier(n_neighbors=K_value, weights='uniform', algorithm='auto')
+        neigh = KNeighborsClassifier(n_neighbors=K_value, weights='uniform', algorithm='kd_tree')
         neigh.fit(X_train, y_train)
         y_pred = neigh.predict(X_test)
         pred = (accuracy_score(y_test, y_pred) * 100)
@@ -44,6 +47,12 @@ def knnClassifer(dataset, features):
             k_best = K_value
         print ("Accuracy is ", pred, "% for K-Value :", K_value)
         sys.stdout.flush()
+
+    pipe = make_pipeline(KNeighborsClassifier(n_neighbors=k_best, weights='uniform', algorithm='auto'))
+    pipe.fit(X_train, y_train)
+    joblib.dump(pipe, 'model.pkl')
+
+
     print("Best Prediction: ", y_best_pred,"% for K-Value:", k_best)
     #plt.figure(figsize=(10, 7))
     #sn.heatmap(neigh, annot=True)
@@ -56,11 +65,12 @@ def knnClassifer(dataset, features):
 
 def main():
     
-    file_path = "../Dados/train-feature5.csv"
+    file_path = "../Dados/train-feature3.csv"
+    data_file = '../boa.csv'
 
-    name_of_features = first_dataset(file_path)
+    name_of_features = first_dataset(data_file)
 
-    dataset = loadDataSet(file_path, name_of_features)
+    dataset = loadDataSet(data_file, name_of_features)
     dataset = dataset.drop('id', 1)
 
     name_of_features.pop(0)
