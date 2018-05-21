@@ -263,6 +263,11 @@ def extractFeature(chunksize=10):
     count_total = 0
     featureList = []
     cols = ['id', 'len', 'array']
+    cols_feature = ['id_target', 'len', 'inv1', 'inv2', 'inv3', 'inv4', 'inv5', 'total_inv',
+                    'median', 'mean',
+                    'max_mean', 'min_mean',
+                    'max_length', 'min_length',
+                    'target']
     start_time = timeit.default_timer()
     for data_train in pd.read_csv(big_file, encoding="latin_1", sep=",", names=cols, engine='python', iterator=True, chunksize=chunksize):
         count_total += 1
@@ -270,20 +275,14 @@ def extractFeature(chunksize=10):
                 data_array = row['array'].replace("]", "").replace("[", "")
                 data_array = [int(s) for s in data_array.split('  ')]
                 predicted = int(data_pred['target'][data_pred['id'] == row['id']].values)
-                setFeatures(data_array, featureList, id=row['id'],  target=predicted)
+                getFeatureFromArray(data_array, featureList,  target=predicted)
         if count_total % 10 == 0:
             print("Itera: ", count_total, "array_size:", row[1], "id:", row['id'])
             sys.stdout.flush()
-
-    cols_feature = ['id_target', 'len', 'inv1', 'inv2', 'inv3', 'inv4', 'inv5', 'total_inv',
-                    'median', 'mean',
-                    'max_mean', 'min_mean',
-                    'max_length', 'min_length',
-                    'target']
     elapsed = timeit.default_timer() - start_time
     print("time - ", format(elapsed, '.2f'))
     features = pd.DataFrame(featureList, columns=cols_feature)
-    file_name = "Dados/master-features3.csv"
+    file_name = "Dados/main-features.csv"
     features.to_csv(file_name, sep=',', encoding='utf-8', index_label='id')
 
 
