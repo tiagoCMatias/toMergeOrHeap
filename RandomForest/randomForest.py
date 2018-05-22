@@ -56,10 +56,6 @@ def create_classifier(dataSet, features):
     y_pred = clf.predict(X_test)
     print( "Accurycy: ", accuracy_score(y_test, y_pred) * 100)
 
-
-    #print("Accuracy is ", accuracy_score(y_test, y_pred) * 100)
-
-
 # Utility function to report best scores
 def report(results, n_top=3):
     for i in range(1, n_top + 1):
@@ -72,10 +68,43 @@ def report(results, n_top=3):
             print("Parameters: {0}".format(results['params'][candidate]))
             print("")
 
+def forestClassifer(dataset, features):
+
+    X = dataset[features]
+    y = dataset['target']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    model = RandomForestClassifier()
+    parameters = {
+        'n_estimators': [9, 18, 27, 36, 45, 54, 63],
+        'max_features': ["auto", "sqrt", "log2"],
+        "min_samples_leaf": [1, 2, 4, 6, 8, 10],
+        'criterion': ['gini'],
+        'max_depth': [1, 5, 10, 15, 20, 25, 30],
+    }
+    rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
+    rsearch.fit(dataset[features], dataset['target'])
+
+    #summarize the results of the random parameter search
+    #print(rsearch)
+    print(rsearch.best_score_)
+    print(rsearch.best_params_)
+
+    rsearch.fit(X_train, y_train)
+    y_pred = rsearch.predict(X_test)
+    pred = accuracy_score(y_test, y_pred) * 100
+
+    print("Best Prediction: ", pred)
 
 def gridSearch():
 
-    data_file = '../boa.csv'
+    data_file = 'boa.csv'
 
     name_of_features = first_dataset(data_file)
 
@@ -107,9 +136,8 @@ def gridSearch():
 
     report(rf_random.cv_results_)
 
-
-def train():
-    data_file = '../boa.csv'
+def main(): 
+    data_file = 'boa.csv'
 
     features = first_dataset(data_file)
 
@@ -119,14 +147,7 @@ def train():
     features.pop(0)
     features.pop()
 
-    create_classifier(dataSet, features)
-
-
-def main():
-    #gridSearch()
-    train()
-
-
+    forestClassifer(dataSet,features)
 
 if __name__ == '__main__':
 

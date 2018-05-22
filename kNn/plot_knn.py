@@ -11,6 +11,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.pipeline import make_pipeline
 import joblib
 
+from sklearn import model_selection
 
 def loadDataSet(file_path, cols):
     return pd.read_csv(file_path, encoding="latin_1", sep=",", skiprows=1, names=cols, engine='python', memory_map=True)
@@ -21,7 +22,6 @@ def first_dataset(data_file):
     return dataset
   
 def knnClassifer(dataset, features):
-    feature_number = (features.__len__())-1
 
     X = dataset[features]
     y = dataset['target']
@@ -33,40 +33,29 @@ def knnClassifer(dataset, features):
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
 
-    y_best_pred = 0
-    k_best = 0
-    for K in range(50):
-        K_value = K + 1
-        neigh = KNeighborsClassifier(n_neighbors=K_value, weights='uniform', algorithm='kd_tree')
-        neigh.fit(X_train, y_train)
-        y_pred = neigh.predict(X_test)
-        pred = (accuracy_score(y_test, y_pred) * 100)
-        if pred > y_best_pred:
-            y_best_pred = pred
-            cm = confusion_matrix(y_test, y_pred)
-            k_best = K_value
-        print ("Accuracy is ", pred, "% for K-Value :", K_value)
-        sys.stdout.flush()
+    model = KNeighborsClassifier()
+    parameters = {
+        'n_neighbors': [1, 2, 5, 10, 20, 50],
+        'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
+        'weights': ['uniform','distance'],
+    }
+    rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
+    rsearch.fit(dataset[features], dataset['target'])
 
-    pipe = make_pipeline(KNeighborsClassifier(n_neighbors=k_best, weights='uniform', algorithm='auto'))
-    pipe.fit(X_train, y_train)
-    joblib.dump(pipe, 'model.pkl')
+    #summarize the results of the random parameter search
+    #print(rsearch)
+    #print(rsearch.best_score_)
+    print(rsearch.best_params_)
 
+    rsearch.fit(X_train, y_train)
+    y_pred = rsearch.predict(X_test)
+    pred = accuracy_score(y_test, y_pred) * 100
 
-    print("Best Prediction: ", y_best_pred,"% for K-Value:", k_best)
-    #plt.figure(figsize=(10, 7))
-    #sn.heatmap(neigh, annot=True)
-    #classifier = KNeighborsClassifier(n_neighbors=5)
-    #classifier.fit(X_train, y_train)
-    #y_pred = classifier.predict(X_test)
-    #cm = confusion_matrix(y_test, y_pred)
-
-
+    #print("Best Prediction: ", pred)
 
 def main():
     
-    file_path = "../Dados/train-feature3.csv"
-    data_file = '../boa.csv'
+    data_file = 'boa.csv'
 
     name_of_features = first_dataset(data_file)
 

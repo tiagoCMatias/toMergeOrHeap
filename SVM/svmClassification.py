@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
-
+from sklearn import model_selection
 from sklearn.model_selection import validation_curve
 
 
@@ -21,7 +21,39 @@ def first_dataset(data_file):
     dataset = list(firstline)
     return dataset
 
+def svcClassifer(dataset, features):
 
+    X = dataset[features]
+    y = dataset['target']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    model = svm.SVC()
+    parameters = {
+        'coef0': [0.0],
+        'degree': [1, 2, 3, 4, 6, 8, 10],
+        #"gamma": ['rbf','auto','poly','sigmoid'],
+        'kernel': ['linear','poly','rbf','sigmoid','precomputed','callable'],
+        'C': [1.0],
+    }
+    rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
+    rsearch.fit(dataset[features], dataset['target'])
+
+    #summarize the results of the random parameter search
+    #print(rsearch)
+    print(rsearch.best_score_)
+    print(rsearch.best_params_)
+
+    rsearch.fit(X_train, y_train)
+    y_pred = rsearch.predict(X_test)
+    pred = accuracy_score(y_test, y_pred) * 100
+
+    print("Best Prediction: ", pred)
 
 def create_target(dataSet, features, targetDataSet, target_features):
     y = dataSet['target']
@@ -77,8 +109,8 @@ def create_classifier(dataSet, features):
 
 
 def main():
-    target_file = '../Dados/main-features2.csv'
-    data_file = '../boa.csv'
+    target_file = 'main-features2.csv'
+    data_file = 'boa.csv'
     target_features = first_dataset(target_file)
     name_of_features = first_dataset(data_file)
 
@@ -96,8 +128,10 @@ def main():
 
     target_features.pop(0)
 
-    dt = create_classifier(dataSet, name_of_features)
-    create_target(dataSet, name_of_features, targetDataSet, target_features)
+    svcClassifer(dataSet,name_of_features)
+
+    #dt = create_classifier(dataSet, name_of_features)
+    #create_target(dataSet, name_of_features, targetDataSet, target_features)
 
 
 if __name__ == '__main__':

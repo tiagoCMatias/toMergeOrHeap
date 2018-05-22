@@ -51,8 +51,6 @@ def prepare_data(dataSet, features):
         print("Accuracy is ", pred)
         sys.stdout.flush()
     print("Best Prediction: ", format(y_best_pred, '.2f'), place)
-    #clf = MLPClassifier(hidden_layer_sizes=(len(features),len(features),len(features)))
-    #clf.fit(X_train, y_train)
 
     return clf
 
@@ -90,9 +88,9 @@ def create_target(dataSet, features, targetDataSet, target_features):
 
 
 def generateOutput():
-    data_file = '../boa.csv'
+    data_file = 'boa.csv'
 
-    target_file = '../Dados/main-features2.csv'
+    target_file = 'main-features2.csv'
 
     name_of_features = first_dataset(data_file)
     target_features = first_dataset(target_file)
@@ -103,16 +101,14 @@ def generateOutput():
 
     name_of_features.pop(0)
     name_of_features.pop()
-
-    #target_features.pop(0)
 
     create_target(dataSet, name_of_features, targetDataSet, target_features)
 
 
 def train():
 
-    file_path = "../Dados/master-features.csv"
-    data_file = '../boa.csv'
+    file_path = "main-features2.csv"
+    data_file = 'boa.csv'
 
     name_of_features = first_dataset(data_file)
 
@@ -123,12 +119,10 @@ def train():
     name_of_features.pop()
 
     print(name_of_features)
-    dt = create_classifier(dataSet, name_of_features)
-
 
 def gridSearch(targetFile, targetFeatures):
 
-    data_file = '../boa.csv'
+    data_file = 'boa.csv'
 
     name_of_features = first_dataset(data_file)
 
@@ -138,50 +132,44 @@ def gridSearch(targetFile, targetFeatures):
     name_of_features.pop(0)
     name_of_features.pop()
 
-    print(name_of_features)
+    X = dataSet[name_of_features]
+    y = dataSet['target']
 
-    print(len(name_of_features), len(targetFeatures))
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+    scaler = StandardScaler()
+    scaler.fit(X_train)
 
-    # prepare a uniform distribution to sample for the alpha parameter
-    #param_grid = {'alpha': sp_rand()}
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
 
-    # create and fit a ridge regression model, testing random alpha values
     model = MLPClassifier()
     parameters = {
-        #'learning_rate': ["constant", "invscaling"],
         'hidden_layer_sizes': [(100, 10), (100, 20), (100, 30), (100, 1), (100, 5)],
-        'learning_rate': ['constant', 'invscaling'],
+        'learning_rate': ['constant', 'invscaling', 'adaptive'],
         'learning_rate_init': [0.05 , 0.01, 0.1],
-        #'alpha': [10.0 ** -np.arange(1, 7)],
         'activation': ['identity', 'logistic', 'tanh', 'relu']
     }
     rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
     rsearch.fit(dataSet[name_of_features], dataSet['target'])
 
-    print(rsearch)
+    #print(rsearch)
     # summarize the results of the random parameter search
-    print(rsearch.best_score_)
-    print(rsearch.best_estimator_.alpha)
-    if targetFile:
-        prediction = rsearch.predict(targetFile[targetFeatures])
-        cols = ['Predicted']
-        cenas = targetFile['id_target']
-        features = pd.DataFrame(prediction, columns=cols)
-        file_name = "output2.csv"
-        features.set_index(cenas, inplace=True)
-        features.to_csv(file_name, sep=',', encoding='utf-8')
+    #print(rsearch.best_score_)
+    print(rsearch.best_params_)
 
+    rsearch.fit(X_train, y_train)
+    y_pred = rsearch.predict(X_test)
+    pred = accuracy_score(y_test, y_pred) * 100
 
+    #print("Best Prediction: ", pred)
 
 def main():
-    target_file = '../Dados/main-features2.csv'
+    target_file = 'main-features2.csv'
     target_features = first_dataset(target_file)
     targetDataSet = load_dataset(target_file, target_features)
 
-    # target_features.pop(0)
-    #gridSearch(targetDataSet, target_features)
-    #train()
-    generateOutput()
+    gridSearch(targetDataSet, target_features)
+
 
 
 if __name__ == '__main__':
