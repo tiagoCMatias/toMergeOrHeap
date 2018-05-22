@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 import joblib
 
+from sklearn import model_selection
 from sklearn.datasets import make_classification
 from sklearn.ensemble import ExtraTreesClassifier
 
@@ -19,18 +20,44 @@ def first_dataset(data_file):
     firstline = pd.read_csv(data_file)
     dataset = list(firstline)
     return dataset
+def treeClassifier(dataset, features):
 
+    X = dataset[features]
+    y = dataset['target']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    model = DecisionTreeClassifier()
+    parameters = {
+        'criterion': ['gini'],
+        'min_samples_split': [100, 500, 1000, 2000],
+        'max_features': ['auto', 'sqrt', 'log2', None],
+        'random_state': [1, 10, 50, 99],
+        'class_weight': ['balanced', None],
+    }
+    rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
+    rsearch.fit(dataset[features], dataset['target'])
+
+    #summarize the results of the random parameter search
+    #print(rsearch)
+    #print(rsearch.best_score_)
+    print(rsearch.best_params_)
+
+    rsearch.fit(X_train, y_train)
+    y_pred = rsearch.predict(X_test)
+    pred = accuracy_score(y_test, y_pred) * 100
+
+    #print("Best Prediction: ", pred)
 
 def create_classifier(dataSet, features):
     y = dataSet['target']
     X = dataSet[features]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
-
-    #scaler = StandardScaler()
-    #scaler.fit(X_train)
-
-    #X_train = scaler.transform(X_train)
-    #X_test = scaler.transform(X_test)
 
     dt = DecisionTreeClassifier(criterion='entropy', min_samples_split=1000, random_state=99)
     dt.fit(X_train, y_train)
@@ -44,14 +71,7 @@ def create_target(dataSet, features, targetDataSet, target_features):
     y = dataSet['target']
     X = dataSet[features]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
-    #scaler = StandardScaler()
-    #scaler.fit(X_train)
-
-    #X_train = scaler.transform(X_train)
-    #scaler.fit(X_test)
-    #X_test = scaler.transform(X_test)
+    X_test, y_test = train_test_split(X, y, test_size=0.2)
 
     dt = DecisionTreeClassifier(criterion='entropy', min_samples_split=1000, random_state=99)
     dt.fit(dataSet[features], dataSet['target'])
@@ -92,9 +112,9 @@ def visualize_tree(tree, feature_names):
              "produce visualization")
 
 def main():
-    data_file = '../boa.csv'
+    data_file = 'boa.csv'
 
-    target_file = '../Dados/main-features2.csv'
+    target_file = 'main-features2.csv'
 
     name_of_features = first_dataset(data_file)
     target_features = first_dataset(target_file)
@@ -107,23 +127,16 @@ def main():
     name_of_features.pop(0)
     name_of_features.pop(0)
 
-
     name_of_features.pop()
 
-    #target_features.pop(0)
-
-    print (name_of_features)
-    #print(target_features)
-    #print( len(name_of_features), len(target_features) )
-
-    #name_of_features = [ 'big_numbers', 'negative_numbers', 'big_negative', 'peaks', 'factor', 'merge_time', 'heap_time', 'total_time', 'max_inv' ]
+    target_features.pop(0)
+    #print (name_of_features)
+    #print (target_features)
 
 
-
-    create_target(dataSet, name_of_features, targetDataSet, target_features)
-    dt = create_classifier(dataSet, name_of_features)
-    #visualize_tree(dt, name_of_features)
-
+    #create_target(dataSet, name_of_features, targetDataSet, target_features)
+    
+    treeClassifier(dataSet, name_of_features)
 
 if __name__ == '__main__':
 
