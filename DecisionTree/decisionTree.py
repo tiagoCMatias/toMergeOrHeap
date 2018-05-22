@@ -1,5 +1,6 @@
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 import graphviz
+import random
 import subprocess
 import pandas as pd
 import numpy as np
@@ -21,6 +22,10 @@ def first_dataset(data_file):
     dataset = list(firstline)
     return dataset
 def treeClassifier(dataset, features):
+    result = []
+
+    for x in range (0, 100):
+        result.append(x)
 
     X = dataset[features]
     y = dataset['target']
@@ -37,7 +42,7 @@ def treeClassifier(dataset, features):
         'criterion': ['gini'],
         'min_samples_split': [100, 500, 1000, 2000],
         'max_features': ['auto', 'sqrt', 'log2', None],
-        'random_state': [1, 10, 50, 99],
+        'random_state': result,
         'class_weight': ['balanced', None],
     }
     rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
