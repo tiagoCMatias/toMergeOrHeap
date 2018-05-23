@@ -20,6 +20,12 @@ def first_dataset(data_file):
     firstline = pd.read_csv(data_file)
     dataset = list(firstline)  
     return dataset
+
+def inRange(begin, final):
+    result = []    
+    for x in range (begin, final):
+        result.append(x)
+    return result
   
 def knnClassifer(dataset, features):
 
@@ -35,23 +41,15 @@ def knnClassifer(dataset, features):
 
     model = KNeighborsClassifier()
     parameters = {
-        'n_neighbors': [1, 2, 5, 10, 20, 50],
+        'n_neighbors': inRange(1,50),
         'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
         'weights': ['uniform','distance'],
     }
     rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
     rsearch.fit(dataset[features], dataset['target'])
 
-    #summarize the results of the random parameter search
-    #print(rsearch)
-    #print(rsearch.best_score_)
+    print('The best parameters are : ')
     print(rsearch.best_params_)
-
-    rsearch.fit(X_train, y_train)
-    y_pred = rsearch.predict(X_test)
-    pred = accuracy_score(y_test, y_pred) * 100
-
-    #print("Best Prediction: ", pred)
 
 def main():
     

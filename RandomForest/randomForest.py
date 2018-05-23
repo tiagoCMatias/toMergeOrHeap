@@ -68,6 +68,12 @@ def report(results, n_top=3):
             print("Parameters: {0}".format(results['params'][candidate]))
             print("")
 
+def inRange(begin, final):
+    result = []    
+    for x in range (begin, final):
+        result.append(x)
+    return result
+
 def forestClassifer(dataset, features):
 
     X = dataset[features]
@@ -82,25 +88,17 @@ def forestClassifer(dataset, features):
 
     model = RandomForestClassifier()
     parameters = {
-        'n_estimators': [9, 18, 27, 36, 45, 54, 63],
+        'n_estimators': inRange(1,63),
         'max_features': ["auto", "sqrt", "log2"],
-        "min_samples_leaf": [1, 2, 4, 6, 8, 10],
+        "min_samples_leaf": inRange(1,10),
         'criterion': ['gini'],
-        'max_depth': [1, 5, 10, 15, 20, 25, 30],
+        'max_depth': inRange(1,30),
     }
     rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
     rsearch.fit(dataset[features], dataset['target'])
 
-    #summarize the results of the random parameter search
-    #print(rsearch)
-    print(rsearch.best_score_)
+    print('The best parameters are : ')
     print(rsearch.best_params_)
-
-    rsearch.fit(X_train, y_train)
-    y_pred = rsearch.predict(X_test)
-    pred = accuracy_score(y_test, y_pred) * 100
-
-    print("Best Prediction: ", pred)
 
 def gridSearch():
 

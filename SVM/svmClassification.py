@@ -21,6 +21,12 @@ def first_dataset(data_file):
     dataset = list(firstline)
     return dataset
 
+def inRange(begin, final):
+    result = []    
+    for x in range (begin, final):
+        result.append(x)
+    return result
+
 def svcClassifer(dataset, features):
 
     X = dataset[features]
@@ -36,24 +42,16 @@ def svcClassifer(dataset, features):
     model = svm.SVC()
     parameters = {
         'coef0': [0.0],
-        'degree': [1, 2, 3, 4, 6, 8, 10],
-        #"gamma": ['rbf','auto','poly','sigmoid'],
-        'kernel': ['linear','poly','rbf','sigmoid','precomputed','callable'],
+        'degree': inRange(1,10),
+        'gamma': ['rbf','auto','poly','sigmoid'],
+        'kernel': ['linear','poly','rbf','sigmoid','precomputed'],
         'C': [1.0],
     }
     rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
     rsearch.fit(dataset[features], dataset['target'])
 
-    #summarize the results of the random parameter search
-    #print(rsearch)
-    print(rsearch.best_score_)
+    print('The best parameters are : ')
     print(rsearch.best_params_)
-
-    rsearch.fit(X_train, y_train)
-    y_pred = rsearch.predict(X_test)
-    pred = accuracy_score(y_test, y_pred) * 100
-
-    print("Best Prediction: ", pred)
 
 def create_target(dataSet, features, targetDataSet, target_features):
     y = dataSet['target']

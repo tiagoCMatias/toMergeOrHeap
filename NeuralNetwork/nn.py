@@ -152,16 +152,9 @@ def gridSearch(targetFile, targetFeatures):
     rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
     rsearch.fit(dataSet[name_of_features], dataSet['target'])
 
-    #print(rsearch)
-    # summarize the results of the random parameter search
-    #print(rsearch.best_score_)
+    print('The best parameters are : ')
     print(rsearch.best_params_)
 
-    rsearch.fit(X_train, y_train)
-    y_pred = rsearch.predict(X_test)
-    pred = accuracy_score(y_test, y_pred) * 100
-
-    #print("Best Prediction: ", pred)
 
 def main():
     target_file = 'main-features2.csv'

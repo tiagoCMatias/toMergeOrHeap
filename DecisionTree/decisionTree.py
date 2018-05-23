@@ -21,11 +21,14 @@ def first_dataset(data_file):
     firstline = pd.read_csv(data_file)
     dataset = list(firstline)
     return dataset
-def treeClassifier(dataset, features):
-    result = []
 
-    for x in range (0, 100):
+def inRange(begin, final):
+    result = []    
+    for x in range (begin, final):
         result.append(x)
+    return result
+
+def treeClassifier(dataset, features):
 
     X = dataset[features]
     y = dataset['target']
@@ -40,24 +43,16 @@ def treeClassifier(dataset, features):
     model = DecisionTreeClassifier()
     parameters = {
         'criterion': ['gini'],
-        'min_samples_split': [100, 500, 1000, 2000],
+        'min_samples_split': inRange(0,2000),
         'max_features': ['auto', 'sqrt', 'log2', None],
-        'random_state': result,
+        'random_state': inRange(0,100),
         'class_weight': ['balanced', None],
     }
     rsearch = model_selection.GridSearchCV(estimator=model, param_grid=parameters, n_jobs=-1,cv=10)
     rsearch.fit(dataset[features], dataset['target'])
 
-    #summarize the results of the random parameter search
-    #print(rsearch)
-    #print(rsearch.best_score_)
+    print('The best parameters are : ')
     print(rsearch.best_params_)
-
-    rsearch.fit(X_train, y_train)
-    y_pred = rsearch.predict(X_test)
-    pred = accuracy_score(y_test, y_pred) * 100
-
-    #print("Best Prediction: ", pred)
 
 def create_classifier(dataSet, features):
     y = dataSet['target']
