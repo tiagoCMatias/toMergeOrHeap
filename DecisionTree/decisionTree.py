@@ -1,24 +1,14 @@
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
-import graphviz
 import subprocess
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
-import joblib
 
-from sklearn.datasets import make_classification
-from sklearn.ensemble import ExtraTreesClassifier
+import sys
+sys.path.append('../')
 
-def load_dataset(data_file, cols):
-    return pd.read_csv(data_file, encoding="latin_1", sep=",", skiprows=1, names=cols, engine='python', memory_map=True)
-
-def first_dataset(data_file):
-    firstline = pd.read_csv(data_file)
-    dataset = list(firstline)
-    return dataset
+from geral.helpFunctions import load_dataset, generatePredictionFile, first_dataset
 
 
 def create_classifier(dataSet, features):
@@ -44,27 +34,52 @@ def create_target(dataSet, features, targetDataSet, target_features):
     y = dataSet['target']
     X = dataSet[features]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0)
 
-    #scaler = StandardScaler()
-    #scaler.fit(X_train)
+    X_test = targetDataSet[target_features]
+    scaler = StandardScaler()
+    scaler.fit(X_train)
 
-    #X_train = scaler.transform(X_train)
-    #scaler.fit(X_test)
-    #X_test = scaler.transform(X_test)
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
 
     dt = DecisionTreeClassifier(criterion='entropy', min_samples_split=1000, random_state=99)
-    dt.fit(dataSet[features], dataSet['target'])
-    y_pred = dt.predict(X_test)
-    print("Accuracy is ", accuracy_score(y_test, y_pred) * 100)
-    prediction = dt.predict(targetDataSet[target_features])
+
+    dt.fit(X_train, y_train)
+    prediction = dt.predict(X_test)
 
     cols = ['Predicted']
     cenas = targetDataSet['id_target']
+    print(cenas.all())
     features = pd.DataFrame(prediction, columns=cols)
-    file_name = "output2.csv"
-    features.set_index(cenas, inplace = True)
+    file_name = "decision.csv"
+    features.set_index(cenas, inplace=True)
     features.to_csv(file_name, sep=',', encoding='utf-8')
+
+
+def createTreeClassifier(trainDataSet, features, targetDataSet):
+    X = trainDataSet[features]
+    y = trainDataSet['target']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    decisionTree = DecisionTreeClassifier(criterion='gini',
+                                          min_samples_split=1000,
+                                          random_state=69,
+                                          max_features='auto')
+    decisionTree.fit(X_train, y_train)
+    y_pred = decisionTree.predict(X_test)
+    pred = (accuracy_score(y_test, y_pred) * 100)
+    print("Prediction: ", pred)
+    decisionTree.fit(trainDataSet[features], trainDataSet['target'])
+    prediction = decisionTree.predict(targetDataSet)
+    generatePredictionFile(targetDataSet, prediction, file_name="treePrediction.csv")
+    return decisionTree
 
 
 def visualize_tree(tree, feature_names):
@@ -92,37 +107,24 @@ def visualize_tree(tree, feature_names):
              "produce visualization")
 
 def main():
-    data_file = '../boa.csv'
+    targetFile = "../Dados/main-features2.csv"
+    trainFile = '../boa.csv'
 
-    target_file = '../Dados/main-features2.csv'
+    trainFeatures = first_dataset(trainFile)
 
-    name_of_features = first_dataset(data_file)
-    target_features = first_dataset(target_file)
+    trainDataSet = load_dataset(trainFile, trainFeatures).drop('id', 1)
 
-    dataSet = load_dataset(data_file, name_of_features)
-    targetDataSet = load_dataset(target_file, target_features)
+    trainFeatures.pop(0)
+    trainFeatures.pop()
 
-    dataSet = dataSet.drop('id', 1)
+    targetFeatures = first_dataset(targetFile)
+    targetDataSet = load_dataset(targetFile, targetFeatures)
 
-    name_of_features.pop(0)
-    name_of_features.pop(0)
+    print(trainFeatures)
+    print(targetFeatures)
 
-
-    name_of_features.pop()
-
-    #target_features.pop(0)
-
-    print (name_of_features)
-    #print(target_features)
-    #print( len(name_of_features), len(target_features) )
-
-    #name_of_features = [ 'big_numbers', 'negative_numbers', 'big_negative', 'peaks', 'factor', 'merge_time', 'heap_time', 'total_time', 'max_inv' ]
-
-
-
-    create_target(dataSet, name_of_features, targetDataSet, target_features)
-    dt = create_classifier(dataSet, name_of_features)
-    #visualize_tree(dt, name_of_features)
+    decisionTree = createTreeClassifier(trainDataSet, trainFeatures, targetDataSet)
+    visualize_tree(decisionTree, trainFeatures)
 
 
 if __name__ == '__main__':

@@ -8,18 +8,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 import sys
+sys.path.append('../')
+
+from geral.helpFunctions import load_dataset, generatePredictionFile, first_dataset
 from scipy.stats import uniform as sp_rand
 
 from sklearn import model_selection
 
-def load_dataset(data_file, cols):
-    return pd.read_csv(data_file, encoding="latin_1", sep=",", skiprows=1, names=cols, engine='python', memory_map=True)
-
-def first_dataset(data_file):
-    firstline = pd.read_csv(data_file)
-    dataset = list(firstline)  
-    return dataset
-    
 def prepare_data(dataSet, features):
     y = dataSet['target']
     X = dataSet[features]
@@ -123,7 +118,6 @@ def train():
     name_of_features.pop()
 
     print(name_of_features)
-    dt = create_classifier(dataSet, name_of_features)
 
 
 def gridSearch(targetFile, targetFeatures):
@@ -172,16 +166,48 @@ def gridSearch(targetFile, targetFeatures):
         features.to_csv(file_name, sep=',', encoding='utf-8')
 
 
+def createNeuralNetworkClassifier(trainDataSet, features, targetDataSet):
+    X = trainDataSet[features]
+    y = trainDataSet['target']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.10)
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    neural = MLPClassifier(activation='relu',
+                           hidden_layer_sizes=(100, 20),
+                           learning_rate='constant',
+                           learning_rate_init=0.01)
+    neural.fit(X_train, y_train)
+    y_pred = neural.predict(X_test)
+    pred = (accuracy_score(y_test, y_pred) * 100)
+    print("Prediction: ", pred)
+    neural.fit(trainDataSet[features], trainDataSet['target'])
+    prediction = neural.predict(targetDataSet)
+    generatePredictionFile(targetDataSet, prediction, file_name="neuralPrediction.csv")
+
 
 def main():
-    target_file = '../Dados/main-features2.csv'
-    target_features = first_dataset(target_file)
-    targetDataSet = load_dataset(target_file, target_features)
+    targetFile = "../Dados/main-features2.csv"
+    trainFile = '../boa.csv'
 
-    # target_features.pop(0)
-    #gridSearch(targetDataSet, target_features)
-    #train()
-    generateOutput()
+    trainFeatures = first_dataset(trainFile)
+
+    trainDataSet = load_dataset(trainFile, trainFeatures).drop('id', 1)
+
+    trainFeatures.pop(0)
+    trainFeatures.pop()
+
+    targetFeatures = first_dataset(targetFile)
+    targetDataSet = load_dataset(targetFile, targetFeatures)
+
+    print(trainFeatures)
+    print(targetFeatures)
+
+    createNeuralNetworkClassifier(trainDataSet, trainFeatures, targetDataSet)
 
 
 if __name__ == '__main__':

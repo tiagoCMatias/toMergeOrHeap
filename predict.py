@@ -348,9 +348,10 @@ def main():
     print("teste")
 
     data_file = "Dados/master-features.csv"
-    #getPercentagem(data_file)
+    #
+    getPercentagem(data_file)
     #extractFeature()
-    prepareData()
+    #prepareData()
 
 def mergeSort(alist):
     count = 0

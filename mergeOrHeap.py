@@ -237,8 +237,13 @@ def extractSampleFeature(chunksize=10):
                 predicted = int(data_pred['target'][data_pred['id'] == row['id']].values)
                 getFeatureFromArray(data_array, featureList, predicted)
                 count_total += 1
-            #    if merge_array and heap_array:
-            #       drawMultiArrayGraph(merge_array, heap_array)
+
+                if(predicted == 1):
+                    heap_array = data_array
+                if(predicted == 2):
+                    merge_array = data_array
+                if merge_array and heap_array:
+                   drawMultiArrayGraph(merge_array, heap_array)
             if row['len'] > 100:
                 cols_feature = ['len', 'inv1', 'inv2', 'inv3', 'inv4', 'inv5', 'total_inv',
                                 'median' , 'mean',
@@ -362,7 +367,6 @@ def prepareData():
     features = pd.DataFrame(featureList, columns=cols_feature)
     file_name = "Dados/main-features2.csv"
     features.to_csv(file_name, sep=',', encoding='utf-8', index_label='id')
-
 
 
 
